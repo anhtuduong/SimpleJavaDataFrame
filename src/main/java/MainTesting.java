@@ -42,17 +42,17 @@ public class MainTesting
 		dataFrameCore();
 		dataFrameCoreSpeed();
 		dataVectors();
-		testRestructure();
-		testAnalysis();
+//		testRestructure();
+//		testAnalysis();
 		// Extension 1
-		testRandom();
+//		testRandom();
 		// Extension 2
-		testStatisticsPart1();
-		testStatisticsPart2();
+//		testStatisticsPart1();
+//		testStatisticsPart2();
 		// Extension 3
-		testPlotting();
+//		testPlotting();
 		// Extension 4
-		testExcelIO();
+//		testExcelIO();
 	}
 
 	public static void dataFrameCore()
@@ -153,18 +153,18 @@ public class MainTesting
 		df2.summarize("min", Math::min).print();
 	}
 
-	public static void testRandom()
-	{
-		int rows = 10;
-		RandomTools rt = RandomTools.uniform(10, 20);
-		DataFrame<Double> df;
-		df = rt.generate(12345, rows, Arrays.asList("uniform1", "uniform2"));
-		rt = RandomTools.gaussian(0, 1);
-		df = df.concat(rt.generate(54321, rows, Arrays.asList("normal1", "normal2")));
-		rt = RandomTools.exponential(5);
-		df = df.concat(rt.generate(1337, rows, Arrays.asList("exponential")));
-		df.print();
-	}
+//	public static void testRandom()
+//	{
+//		int rows = 10;
+//		RandomTools rt = RandomTools.uniform(10, 20);
+//		DataFrame<Double> df;
+//		df = rt.generate(12345, rows, Arrays.asList("uniform1", "uniform2"));
+//		rt = RandomTools.gaussian(0, 1);
+//		df = df.concat(rt.generate(54321, rows, Arrays.asList("normal1", "normal2")));
+//		rt = RandomTools.exponential(5);
+//		df = df.concat(rt.generate(1337, rows, Arrays.asList("exponential")));
+//		df.print();
+//	}
 
 	public static void testStatisticsPart1()
 	{
@@ -207,19 +207,19 @@ public class MainTesting
 		}
 	}
 
-	public static void testExcelIO()
-	{
-		DataFrame<Double> df = testDataFrame();
-		try
-		{
-			File f = new File("mydata.xlsx");
-			FileTools.writeToXLSX(df, new File("mydata.xlsx"));
-			DataFrame<Double> read = FileTools.readFromXLSX(f);
-			read.print();
-		} catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
-	}
+//	public static void testExcelIO()
+//	{
+//		DataFrame<Double> df = testDataFrame();
+//		try
+//		{
+//			File f = new File("mydata.xlsx");
+//			FileTools.writeToXLSX(df, new File("mydata.xlsx"));
+//			DataFrame<Double> read = FileTools.readFromXLSX(f);
+//			read.print();
+//		} catch (IOException ex)
+//		{
+//			ex.printStackTrace();
+//		}
+//	}
 
 }

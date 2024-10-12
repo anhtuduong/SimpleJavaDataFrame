@@ -50,8 +50,7 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public void setValue(int rowIndex, String colName, Double value) throws IndexOutOfBoundsException, IllegalArgumentException {
-        if (isValidIndexes(rowIndex, colName)) {
-            // Set the value
+        if (isValidRowIndex(rowIndex) && isValidColumnName(colName)) {
             int columnIndex = this.columnNamesMap.get(colName);
             this.data.get(rowIndex).set(columnIndex, value);
         }
@@ -59,20 +58,22 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public Double getValue(int rowIndex, String colName) throws IndexOutOfBoundsException, IllegalArgumentException {
-        if (isValidIndexes(rowIndex, colName)) {
-            // Set the value
+        Double result = null;
+        if (isValidRowIndex(rowIndex) && isValidColumnName(colName)) {
             int columnIndex = this.columnNamesMap.get(colName);
-            return this.data.get(rowIndex).get(columnIndex);
+            result = this.data.get(rowIndex).get(columnIndex);
         }
-        return null;
+        return result;
     }
 
-    private boolean isValidIndexes(int rowIndex, String colName) throws IndexOutOfBoundsException, IllegalArgumentException {
-        // Check row index
+    private boolean isValidRowIndex(int rowIndex) {
         if (rowIndex < 0 || rowIndex > getRowCount()) {
             throw new IndexOutOfBoundsException("Invalid row index!");
         }
-        // Check column name
+        return true;
+    }
+
+    private boolean isValidColumnName(String colName) {
         if (!this.columnNamesMap.containsKey(colName)) {
             throw new IllegalArgumentException("Column name not exists!");
         }
@@ -81,22 +82,53 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public DataVector<Double> getRow(int rowIndex) throws IndexOutOfBoundsException {
-        return null;
+        DataVector<Double> result = null;
+        if (isValidRowIndex(rowIndex)) {
+            String rowName = "row_" + rowIndex;
+            List<Double> rowData = new ArrayList<>(this.data.get(rowIndex));
+            result = new DoubleDataVector(rowName, getColumnNames(), rowData);
+        }
+        return result;
     }
 
     @Override
     public DataVector<Double> getColumn(String colName) throws IllegalArgumentException {
-        return null;
+        DataVector<Double> result = null;
+        if (isValidColumnName(colName)) {
+            // Create the row names
+            List<String> rowNames = new ArrayList<>();
+            for (int i = 0; i < this.data.size(); i++) {
+                rowNames.add("row_" + i);
+            }
+            // Collect the column data
+            List<Double> colData = new ArrayList<>();
+            int colIndex = this.columnNamesMap.get(colName);
+            for (List<Double> rowList : this.data) {
+                Double value = rowList.get(colIndex);
+                colData.add(value);
+            }
+            // Create DoubleDataVector result
+            result = new DoubleDataVector(colName, rowNames, colData);
+        }
+        return result;
     }
 
     @Override
     public List<DataVector<Double>> getRows() {
-        return List.of();
+        List<DataVector<Double>> result = new ArrayList<>();
+        for (int i = 0; i < getRowCount(); i++) {
+            result.add(getRow(i));
+        }
+        return result;
     }
 
     @Override
     public List<DataVector<Double>> getColumns() {
-        return List.of();
+        List<DataVector<Double>> result = new ArrayList<>();
+        for (String colName : getColumnNames()) {
+            result.add(getColumn(colName));
+        }
+        return result;
     }
 
     @Override
@@ -122,55 +154,5 @@ public class DoubleDataFrame implements DataFrame<Double>
     @Override
     public DataVector<Double> summarize(String name, BinaryOperator<Double> summaryFunction) {
         return null;
-    }
-
-    @Override
-    public DataFrameStatistics statistics() throws UnsupportedOperationException {
-        return DataFrame.super.statistics();
-    }
-
-    @Override
-    public DataFramePlotting plotting() throws UnsupportedOperationException {
-        return DataFrame.super.plotting();
-    }
-
-    @Override
-    public DataFrame<Double> expand(int additionalRows, String... newCols) throws IllegalArgumentException {
-        return DataFrame.super.expand(additionalRows, newCols);
-    }
-
-    @Override
-    public DataFrame<Double> project(String... retainCols) throws IllegalArgumentException {
-        return DataFrame.super.project(retainCols);
-    }
-
-    @Override
-    public DataFrame<Double> expandRows(int additionalRows) {
-        return DataFrame.super.expandRows(additionalRows);
-    }
-
-    @Override
-    public DataFrame<Double> expandColumns(List<String> newCols) {
-        return DataFrame.super.expandColumns(newCols);
-    }
-
-    @Override
-    public DataFrame<Double> concat(DataFrame<Double> other) throws IllegalArgumentException {
-        return DataFrame.super.concat(other);
-    }
-
-    @Override
-    public void print() {
-        DataFrame.super.print();
-    }
-
-    @Override
-    public String formatMatrix(int colWidth) {
-        return DataFrame.super.formatMatrix(colWidth);
-    }
-
-    @Override
-    public Iterator<DataVector<Double>> iterator() {
-        return DataFrame.super.iterator();
     }
 }
