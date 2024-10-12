@@ -5,8 +5,38 @@ import java.util.function.Predicate;
 
 public class DoubleDataFrame implements DataFrame<Double>
 {
-    private Map<String, Integer> columnNamesMap;
+    /* Anh Tu's note:
+    * List of list is 2 dimensions data, equivalent to [][]
+    * for example:
+    * list = List { list0 {1,2,3},
+    *               list1 {4,5,6},
+    *               list2 {7,8,9}
+    *              }
+    * array[][] = { {1,2,3},
+    *               {4,5,6},
+    *               {7,8,9}
+    *              }
+    * list.get(1).get(2) equals to array[1][2]
+    * which means: first get the row index 1
+    * which is the list {4,5,6}. Then get the column index 2,
+    * which is the number 6.
+    */
     private List<List<Double>> data;
+
+    /* Anh Tu's note:
+    * A Map<A, B> is like a dictionary that connect
+    * a key (of datatype A) and a value (of type B).
+    * In this case, in order to find the column index,
+    * the fastest possible will be creating a Map<String, Integer>
+    * that assign column names to index numbers. For example:
+    * map.put("columnA", 0) <-- Assign the key "columnA" to value 0
+    * map.put("columnB", 1) <-- Assign the key "columnB" to value 1
+    * ...
+    * Whenever we need to find the number associated with "columnB", we call
+    * map.get("columnB") <-- the result will be 1
+    * */
+    private Map<String, Integer> columnNamesMap;
+
 
     /*
     * Constructor: initialize data
@@ -15,15 +45,23 @@ public class DoubleDataFrame implements DataFrame<Double>
         // Map the column names with the indexes
         this.columnNamesMap = new HashMap<>();
         for (int i = 0; i < columnNames.size(); i++) {
+            // Iterate each column name
             String key = columnNames.get(i);
             Integer value = i;
+            // and connect column name with the index
             columnNamesMap.put(key, value);
         }
+
         // Convert data array to lists
         this.data = new ArrayList<>();
         for (int i = 0; i < data.length; i++) {
+            // data.length will return the length of the row
+            // because imagine the array with 2 dimensions:
+            // data[row][column]
             List<Double> rowData = new ArrayList<>();
             for (int j = 0; j < data[i].length; j++) {
+                // data[i].length will return the length
+                // of the column
                 rowData.add(data[i][j]);
             }
             this.data.add(rowData);
@@ -45,6 +83,9 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public List<String> getColumnNames() {
+        // columnNamesMap.keySet() will return
+        // the set of {"columnA", "columnB", ...}
+        // Cast it to a list
         return new ArrayList<>(this.columnNamesMap.keySet());
     }
 
