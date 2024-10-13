@@ -37,7 +37,7 @@ public class DoubleDataFrame implements DataFrame<Double>
     * */
     private Map<String, Integer> columnNamesMap;
 
-    private double DEFAULT_DATA = 0.0;
+    private static double DEFAULT_DATA = 0.0;
 
     /*
     * Constructor: initialize data
@@ -45,13 +45,8 @@ public class DoubleDataFrame implements DataFrame<Double>
     public DoubleDataFrame(List<String> columnNames, double [][] data) {
         // Map the column names with the indexes
         this.columnNamesMap = new HashMap<>();
-        for (int i = 0; i < columnNames.size(); i++) {
-            // Iterate each column name
-            String key = columnNames.get(i);
-            Integer value = i;
-            // and connect column name with the index
-            columnNamesMap.put(key, value);
-        }
+        int numberOfIndexes = columnNames.size();
+        mapColumnNamesWithIndexes(this.columnNamesMap, columnNames, numberOfIndexes);
 
         // Convert data array to lists
         this.data = new ArrayList<>();
@@ -81,6 +76,74 @@ public class DoubleDataFrame implements DataFrame<Double>
         // Copy column name map
         this.columnNamesMap = new HashMap<>();
         this.columnNamesMap.putAll(other.getColumnNamesMap());
+    }
+
+    /*
+    * Constructor: construct from list of rows or columns
+    */
+    public DoubleDataFrame(List<DataVector<Double>> dataVectorList, boolean isRow) {
+        // If input is a list of row vectors
+        if (isRow) {
+            constructFromListOfRows(dataVectorList);
+        }
+        // If input is a list of column vectors
+        else {
+            constructFromListOfColumns(dataVectorList);
+        }
+    }
+
+    private void constructFromListOfRows(List<DataVector<Double>> dataVectorList) {
+        // Map the column names with the indexes
+        this.columnNamesMap = new HashMap<>();
+        if (!dataVectorList.isEmpty()) {
+            DataVector<Double> dataVector = dataVectorList.get(0);
+            List<String> columnNames = dataVector.getEntryNames();
+            int numberOfIndexes = columnNames.size();
+            mapColumnNamesWithIndexes(this.columnNamesMap, columnNames, numberOfIndexes);
+        }
+
+        // Copy data
+        this.data = new ArrayList<>();
+        for (DataVector<Double> dataVector : dataVectorList) {
+            List<Double> rowData = dataVector.getValues();
+            this.data.add(rowData);
+        }
+    }
+
+    private void constructFromListOfColumns(List<DataVector<Double>> dataVectorList) {
+        // Initialize data and map
+        this.data = new ArrayList<>();
+        this.columnNamesMap = new HashMap<>();
+        boolean isFirstColumn = true;
+
+        // Iterate each column vector
+        for (int i = 0; i < dataVectorList.size(); i++) {
+            DataVector<Double> dataVector = dataVectorList.get(i);
+            // Map the column name with index
+            String columnName = dataVector.getName();
+            this.columnNamesMap.put(columnName, i);
+            // Copy data
+            List<Double> columnData = dataVector.getValues();
+            for (int k = 0; k < columnData.size(); k++) {
+                Double data = columnData.get(k);
+                if (isFirstColumn) {
+                    this.data.add(new ArrayList<>());
+                }
+                List<Double> rowData = this.data.get(k);
+                rowData.add(data);
+            }
+            isFirstColumn = false;
+        }
+    }
+
+    private void mapColumnNamesWithIndexes(Map<String, Integer> columnNamesMap, List<String> columnNames, int numberOfIndexes) {
+        for (int i = 0; i < numberOfIndexes; i++) {
+            // Iterate each column name
+            String key = columnNames.get(i);
+            Integer value = i;
+            // and connect column name with the index
+            columnNamesMap.put(key, value);
+        }
     }
 
     @Override
@@ -227,7 +290,7 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public DataFrame<Double> project(Collection<String> retainColumns) throws IllegalArgumentException {
-        return null;
+        // TODO
     }
 
     @Override
