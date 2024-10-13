@@ -37,6 +37,7 @@ public class DoubleDataFrame implements DataFrame<Double>
     * */
     private Map<String, Integer> columnNamesMap;
 
+    private double DEFAULT_DATA = 0.0;
 
     /*
     * Constructor: initialize data
@@ -66,6 +67,20 @@ public class DoubleDataFrame implements DataFrame<Double>
             }
             this.data.add(rowData);
         }
+    }
+
+    /*
+     * Copy constructor
+     */
+    public DoubleDataFrame(DoubleDataFrame other) {
+        // Copy data
+        this.data = new ArrayList<>();
+        for (List<Double> rowData : other.getData()) {
+            this.data.add(new ArrayList<>(rowData));
+        }
+        // Copy column name map
+        this.columnNamesMap = new HashMap<>();
+        this.columnNamesMap.putAll(other.getColumnNamesMap());
     }
 
     @Override
@@ -174,7 +189,40 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public DataFrame<Double> expand(int additionalRows, List<String> newCols) throws IllegalArgumentException {
-        return null;
+        // Make a copy of this DoubleDataFrame object
+        DoubleDataFrame result = new DoubleDataFrame(this);
+
+        // Extend new column data
+        for (List<Double> rowData : result.getData()) {
+            // Iterate each new column name
+            for (String newColName : newCols) {
+                // Check if it is already defined in the original data
+                boolean isDuplicated = result.getColumnNamesMap().containsKey(newColName);
+                if (isDuplicated) {
+                    String msg = "Column " + newColName + " is already defined!";
+                    throw new IllegalArgumentException(msg);
+                }
+                // If not defined yet
+                // Map the new column name with new index
+                int newColumnIndex = result.getColumnNames().size();
+                result.getColumnNamesMap().put(newColName, newColumnIndex);
+                // Extend the column data with default value 0.0
+                rowData.add(DEFAULT_DATA);
+            }
+        }
+
+        // Extend new row lists
+        if (additionalRows > 0) {
+            int newTotalColumnCount = getColumnCount() + newCols.size();
+            for (int i = 0; i < additionalRows; i++) {
+                // Create new row list filled with 0.0
+                List<Double> extendRowData = new ArrayList<>(Collections.nCopies(newTotalColumnCount, DEFAULT_DATA));
+                // Add new row list to the extended DataFrame
+                result.getData().add(extendRowData);
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -195,5 +243,13 @@ public class DoubleDataFrame implements DataFrame<Double>
     @Override
     public DataVector<Double> summarize(String name, BinaryOperator<Double> summaryFunction) {
         return null;
+    }
+
+    public List<List<Double>> getData() {
+        return this.data;
+    }
+
+    public Map<String, Integer> getColumnNamesMap() {
+        return this.columnNamesMap;
     }
 }
