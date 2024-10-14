@@ -37,7 +37,7 @@ public class DoubleDataFrame implements DataFrame<Double>
     * */
     private Map<String, Integer> columnNamesMap;
 
-    private static double DEFAULT_DATA = 0.0;
+    private static final double DEFAULT_DATA = 0.0;
 
     /*
     * Constructor: initialize data
@@ -68,14 +68,14 @@ public class DoubleDataFrame implements DataFrame<Double>
      * Copy constructor
      */
     public DoubleDataFrame(DoubleDataFrame other) {
+        // Copy column name map
+        this.columnNamesMap = new HashMap<>();
+        this.columnNamesMap.putAll(other.getColumnNamesMap());
         // Copy data
         this.data = new ArrayList<>();
         for (List<Double> rowData : other.getData()) {
             this.data.add(new ArrayList<>(rowData));
         }
-        // Copy column name map
-        this.columnNamesMap = new HashMap<>();
-        this.columnNamesMap.putAll(other.getColumnNamesMap());
     }
 
     /*
@@ -194,7 +194,8 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     private boolean isValidColumnName(String colName) {
         if (!this.columnNamesMap.containsKey(colName)) {
-            throw new IllegalArgumentException("Column name not exists!");
+            String msg = "Column name " + colName + " not exists!";
+            throw new IllegalArgumentException(msg);
         }
         return true;
     }
@@ -290,7 +291,27 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public DataFrame<Double> project(Collection<String> retainColumns) throws IllegalArgumentException {
-        // TODO
+        // Initialize a sorted map that connects the index with column name
+        Map<Integer, String> sortedIndexColumnNameMap = new TreeMap<>();
+        // Collect retain columns
+        for (String columnName : retainColumns) {
+            // Check if column name exists
+            if (isValidColumnName(columnName)) {
+                // Map the index with corresponded column name
+                int columnIndex = this.columnNamesMap.get(columnName);
+                sortedIndexColumnNameMap.put(columnIndex, columnName);
+            }
+        }
+        // Now we can get the columns with original order
+        // because the sorted map will sort automatically
+        // by the index of the column
+        List<DataVector<Double>> columnList = new ArrayList<>();
+        for (String columnName : sortedIndexColumnNameMap.values()) {
+            DataVector<Double> column = getColumn(columnName);
+            columnList.add(column);
+        }
+        // Return the result by constructing DataFrame with list of columns
+        return new DoubleDataFrame(columnList, false);
     }
 
     @Override
