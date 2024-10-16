@@ -44,7 +44,7 @@ public class DoubleDataFrame implements DataFrame<Double>
     */
     public DoubleDataFrame(List<String> columnNames, double [][] data) {
         // Map the column names with the indexes
-        this.columnNamesMap = new HashMap<>();
+        this.columnNamesMap = new LinkedHashMap<>();
         int numberOfIndexes = columnNames.size();
         mapColumnNamesWithIndexes(this.columnNamesMap, columnNames, numberOfIndexes);
 
@@ -69,7 +69,7 @@ public class DoubleDataFrame implements DataFrame<Double>
      */
     public DoubleDataFrame(DoubleDataFrame other) {
         // Copy column name map
-        this.columnNamesMap = new HashMap<>();
+        this.columnNamesMap = new LinkedHashMap<>();
         this.columnNamesMap.putAll(other.getColumnNamesMap());
         // Copy data
         this.data = new ArrayList<>();
@@ -94,7 +94,7 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     private void constructFromListOfRows(List<DataVector<Double>> dataVectorList) {
         // Map the column names with the indexes
-        this.columnNamesMap = new HashMap<>();
+        this.columnNamesMap = new LinkedHashMap<>();
         if (!dataVectorList.isEmpty()) {
             DataVector<Double> dataVector = dataVectorList.get(0);
             List<String> columnNames = dataVector.getEntryNames();
@@ -113,7 +113,7 @@ public class DoubleDataFrame implements DataFrame<Double>
     private void constructFromListOfColumns(List<DataVector<Double>> dataVectorList) {
         // Initialize data and map
         this.data = new ArrayList<>();
-        this.columnNamesMap = new HashMap<>();
+        this.columnNamesMap = new LinkedHashMap<>();
         boolean isFirstColumn = true;
 
         // Iterate each column vector
@@ -256,23 +256,29 @@ public class DoubleDataFrame implements DataFrame<Double>
         // Make a copy of this DoubleDataFrame object
         DoubleDataFrame result = new DoubleDataFrame(this);
 
+        boolean isFirstRow = true;
+
         // Extend new column data
         for (List<Double> rowData : result.getData()) {
             // Iterate each new column name
             for (String newColName : newCols) {
-                // Check if it is already defined in the original data
-                boolean isDuplicated = result.getColumnNamesMap().containsKey(newColName);
-                if (isDuplicated) {
-                    String msg = "Column " + newColName + " is already defined!";
-                    throw new IllegalArgumentException(msg);
+                if (isFirstRow) {
+                    // Check if it is already defined in the original data
+                    boolean isDuplicated = result.getColumnNamesMap().containsKey(newColName);
+                    if (isDuplicated) {
+                        String msg = "Column " + newColName + " is already defined!";
+                        throw new IllegalArgumentException(msg);
+                    }
+                    // If not defined yet
+                    // Map the new column name with new index
+                    int newColumnIndex = result.getColumnNames().size();
+                    result.getColumnNamesMap().put(newColName, newColumnIndex);
                 }
-                // If not defined yet
-                // Map the new column name with new index
-                int newColumnIndex = result.getColumnNames().size();
-                result.getColumnNamesMap().put(newColName, newColumnIndex);
+
                 // Extend the column data with default value 0.0
                 rowData.add(DEFAULT_DATA);
             }
+            isFirstRow = false;
         }
 
         // Extend new row lists
@@ -316,7 +322,16 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public DataFrame<Double> select(Predicate<DataVector<Double>> rowFilter) {
-        return null;
+        // Get the full row list
+        List<DataVector<Double>> qualifiedRowList = new ArrayList<>();
+        // Collect qualified row based on the filter
+        for (DataVector<Double> row : getRows()) {
+            if (rowFilter.test(row)) {
+                qualifiedRowList.add(row);
+            }
+        }
+        // Return the result by constructing DataFrame with list of columns
+        return new DoubleDataFrame(qualifiedRowList, true);
     }
 
     @Override

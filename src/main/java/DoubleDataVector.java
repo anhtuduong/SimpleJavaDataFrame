@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +11,7 @@ public class DoubleDataVector implements DataVector<Double> {
     public DoubleDataVector(String name, List<String> entryNames, List<Double> data) {
         this.name = name;
         // Associate entry name with its value and put into a map
-        this.dataMap = new HashMap<>();
+        this.dataMap = new LinkedHashMap<>();
         for (int i = 0; i < entryNames.size(); i++) {
             this.dataMap.put(entryNames.get(i), data.get(i));
         }
