@@ -1,3 +1,5 @@
+import javax.xml.crypto.Data;
+import javax.xml.stream.XMLOutputFactory;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -336,12 +338,59 @@ public class DoubleDataFrame implements DataFrame<Double>
 
     @Override
     public DataFrame<Double> computeColumn(String columnName, Function<DataVector<Double>, Double> function) {
-        return null;
+        // Get the original rows
+        List<DataVector<Double>> originalRows = getRows();
+        // Create a list to store the new values
+        List<Double> newValueList = new ArrayList<>();
+        // Iterate each row and apply the function to get the new value
+        for (DataVector<Double> row : originalRows) {
+            Double computedValue = function.apply(row);
+            newValueList.add(computedValue);
+        }
+        // Check the new value list size
+        if (newValueList.size() != getRowCount()) {
+            String msg = "Something wrong! New value list size not equal to number of rows";
+            throw new RuntimeException(msg);
+        }
+        // Expand the DataFrame with one additional column
+        // The values of the new added column will be default (0.0)
+        DataFrame<Double> result = expand(0, columnName);
+        // Iterate through each row and set the new value to the new column
+        for (int i = 0; i < getRowCount(); i++) {
+            Double newValue = newValueList.get(i);
+            result.setValue(i, columnName, newValue);
+        }
+        return result;
     }
 
     @Override
     public DataVector<Double> summarize(String name, BinaryOperator<Double> summaryFunction) {
-        return null;
+        // Create empty list of data
+        List<Double> summaryResultList = new ArrayList<>();
+        // Iterate each column
+        for (DataVector<Double> column : getColumns()) {
+            List<Double> valueList = column.getValues();
+
+            // If there's only 1 element in value list
+            if (valueList.size() == 1) {
+                // Then this only value is the summary value
+                summaryResultList.add(valueList.get(0));
+                // Continue to the next column
+                continue;
+            }
+
+            // If the number of elements in value list > 1
+            // First calculate the summary value with the 1st and 2nd element in value list
+            Double summaryValue = summaryFunction.apply(valueList.get(0), valueList.get(1));
+            // Then iterate from the 3rd element to calculate
+            for (int i = 2; i < valueList.size(); i++) {
+                summaryValue = summaryFunction.apply(summaryValue, valueList.get(i));
+            }
+            // When done calculating, add the summary value to the summary result list
+            summaryResultList.add(summaryValue);
+        }
+        // Construct the DataVector and return the result
+        return new DoubleDataVector(name, getColumnNames(), summaryResultList);
     }
 
     public List<List<Double>> getData() {

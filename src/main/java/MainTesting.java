@@ -43,7 +43,7 @@ public class MainTesting
 		dataFrameCoreSpeed();
 		dataVectors();
 		testRestructure();
-//		testAnalysis();
+		testAnalysis();
 		// Extension 1
 //		testRandom();
 		// Extension 2
